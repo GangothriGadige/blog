@@ -233,16 +233,17 @@ is disallowed ([HIVE-13175][h13175]). Full ACID assumes layouts Hive manages.
 Marts that need row-level change belong in **managed transactional** tables in a
 curated schema, not on a shared landing prefix.
 
-Formats like Delta or Iceberg on object storage carry **their own** transaction
-logs and lifecycle; that is a different model from Hive native ACID on
-`CREATE EXTERNAL TABLE`. Expecting `DELETE` to work because the table "looks
-curated" but is still external is how you end up in the "Spark says DELETE is not
-supported" post, slated for #8 in this series.
+**Renames and `ALTER TABLE SET LOCATION`.** `RENAME TABLE` changes names in the
+metastore. On a **managed** table, Hive may also adjust the warehouse folder
+layout, because it owns that storage. On an **external** table, the name in the
+catalog changes, but the files stay at the same `LOCATION` until you move them
+yourself.
 
-**Renames and `ALTER TABLE SET LOCATION`.** Renaming a managed table is a catalog
-+ warehouse concern. Changing `LOCATION` on external repoints metadata without
-moving files. Useful when migrating buckets; fatal if someone thinks rename moved
-bytes.
+`ALTER TABLE … SET LOCATION '…'` updates the pointer in the metastore. It does
+**not** copy or move files. The usual migration pattern is copy data to the new
+prefix, verify counts, then run `SET LOCATION` so Hive reads the new path. If you
+only rename the table or change `LOCATION` and assume the bytes moved, queries
+can hit an empty folder or the wrong prefix while the real data sits elsewhere.
 
 **Cloud warehouses.** Warehouse dir and `LOCATION` are URLs. The business question
 is unchanged: who may delete the prefix when the catalog entry disappears?
