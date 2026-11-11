@@ -15,4 +15,4 @@ Location:       s3://data-lake/landing/orders/
 # Run this before any cleanup sprint DROP:
 #   DESCRIBE FORMATTED schema.table;
 # If Table Type and Location do not match what stakeholders expect,
-# stop and re-label ownership — do not "just drop it."
+# stop and re-label ownership; do not "just drop it."

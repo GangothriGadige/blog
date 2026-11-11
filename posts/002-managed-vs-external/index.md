@@ -1,7 +1,7 @@
 ---
 title: "Managed vs external tables in Hive 3: who owns the files?"
 published: false
-description: "DROP TABLE is not a syntax detail in Hive 3. It either deletes your product or leaves orphan files on the lake — depending on one word you wrote years ago in DDL."
+description: "DROP TABLE is not a syntax detail in Hive 3. It either deletes your product or leaves orphan files on the lake, depending on one word you wrote years ago in DDL."
 tags: [hive, dataengineering, hive3, tables]
 canonical_url:
 ---
@@ -11,7 +11,7 @@ Two cutovers, two opposite failures, same root cause.
 In the first, we needed a full reload of five years of history for a
 partner-facing interface. The playbook was familiar: `DROP TABLE`, recreate the
 DDL, run the backfill. The table was **external**, but the steps were written like
-a managed refresh — drop the name, load again, validate against upstream. `DROP
+a managed refresh: drop the name, load again, validate against upstream. `DROP
 TABLE` succeeded; nobody deleted the files at the declared `LOCATION`. The reload
 landed on top of the old prefix. Row counts and key checks against upstream failed,
 not because the new extract was wrong, but because queries were reading **old and
@@ -84,11 +84,11 @@ use equivalent default prefixes on ADLS, S3, or GCS).
 
 **Business fit**
 
-- **Analytics products you control** — conformed dimensions, facts, staging built
+- **Analytics products you control:** conformed dimensions, facts, staging built
   only by your pipelines.
-- **Clear accountability** — decommissioning includes `DROP TABLE` and reclaiming
+- **Clear accountability:** decommissioning includes `DROP TABLE` and reclaiming
   space.
-- **Governance** — SLAs and access line up with *your* schema.
+- **Governance:** SLAs and access line up with *your* schema.
 
 **What operators actually run**
 
@@ -101,7 +101,7 @@ STORED AS ORC;
 ```
 
 `CREATE TABLE AS SELECT` and `CREATE TABLE ... AS SELECT` without `EXTERNAL`
-also create **managed** tables unless your session overrides say otherwise — a
+also create **managed** tables unless your session overrides say otherwise, a
 common surprise when a one-off CTAS lands in the warehouse and nobody remembers
 to externalise it.
 
@@ -112,7 +112,7 @@ problem.
 When you `DROP TABLE` on managed, Hive drops metadata and deletes the table's
 warehouse data. Distributions may route deletes through trash; `DROP TABLE ...
 PURGE` skips trash on managed tables where supported. That is what you want when
-retiring **your** mart — and what you must not run when you only meant to
+retiring **your** mart. It is what you must not run when you only meant to
 unregister a landing alias.
 
 ## External tables: metadata points at existing files
@@ -123,12 +123,12 @@ often written first by ingestion or another engine.
 
 **Business fit**
 
-- **Landing boundaries** — upstream drops files; Hive registers them.
-- **Shared lake trees** — one Parquet layout, many readers; dropping one Hive
+- **Landing boundaries:** upstream drops files; Hive registers them.
+- **Shared lake trees:** one Parquet layout, many readers; dropping one Hive
   name must not wipe the canonical copy.
-- **Compliance** — catalog can go; evidence on disk stays until retention policy
+- **Compliance:** catalog can go; evidence on disk stays until retention policy
   says otherwise.
-- **Migration** — register legacy paths while rewrite jobs catch up.
+- **Migration:** register legacy paths while rewrite jobs catch up.
 
 ```sql
 CREATE EXTERNAL TABLE landing.raw_orders (
@@ -141,8 +141,8 @@ LOCATION 's3://data-lake/landing/orders/';
 ```
 
 `DROP TABLE landing.raw_orders` removes the metastore entry **only**. Files at
-`LOCATION` stay until something else deletes or overwrites them — the failure mode
-in the first opening story.
+`LOCATION` stay until something else deletes or overwrites them. That is the
+failure mode in the first opening story.
 
 On newer distros, `external.table.purge=true` makes `DROP TABLE` delete external
 data too. Check `DESCRIBE FORMATTED` for that property and your Hive version
@@ -208,11 +208,11 @@ deletes work somebody thought was "just a temp extract."
 Run this on every cleanup ticket, not only "big" tables:
 
 1. `DESCRIBE FORMATTED schema.table;`
-2. Read **`Table Type:`** — `MANAGED_TABLE` vs `EXTERNAL_TABLE`.
-3. Read **`Location:`** — who else might write or delete under that prefix?
+2. Read **`Table Type:`** (`MANAGED_TABLE` vs `EXTERNAL_TABLE`).
+3. Read **`Location:`** and ask who else might write or delete under that prefix.
 4. Compare to the ticket: "remove catalog entry" vs "reclaim storage."
-5. If managed and you only meant to unregister, **`DROP` is the wrong tool** —
-   use rename, archive policy, or an external pointer instead.
+5. If managed and you only meant to unregister, **`DROP` is the wrong tool**. Use
+   rename, archive policy, or an external pointer instead.
 
 If step 2 and step 4 disagree, stop and escalate. That mismatch is how both
 opening incidents happened.
@@ -235,7 +235,7 @@ supported" post, slated for #8 in this series.
 
 **Renames and `ALTER TABLE SET LOCATION`.** Renaming a managed table is a catalog
 + warehouse concern. Changing `LOCATION` on external repoints metadata without
-moving files — useful when migrating buckets, fatal if someone thinks rename moved
+moving files. Useful when migrating buckets; fatal if someone thinks rename moved
 bytes.
 
 **Cloud warehouses.** Warehouse dir and `LOCATION` are URLs. The business question
@@ -246,9 +246,9 @@ is unchanged: who may delete the prefix when the catalog entry disappears?
 Draw three zones on a whiteboard:
 
 ```text
-landing/     EXTERNAL  — upstream owns bytes; we register and read
-curated/     MANAGED   — we own model + lifecycle
-archive/     EXTERNAL  — long retention; catalog optional
+landing/     EXTERNAL  upstream owns bytes; we register and read
+curated/     MANAGED   we own model + lifecycle
+archive/     EXTERNAL  long retention; catalog optional
 ```
 
 ```mermaid
@@ -292,8 +292,8 @@ only remember one sentence for a multi-engine lake, remember that one.
 ## What is measured here, and what is not
 
 The **DROP / EXTERNAL / managed** behaviour is documented in Hive's
-[LanguageManual DDL][langddl]. Vendor distros add trash, export, and Ranger hooks
-— verify on your cluster before a production `DROP`.
+[LanguageManual DDL][langddl]. Vendor distros add trash, export, and Ranger hooks.
+Verify on your cluster before a production `DROP`.
 
 The **two opening incidents** are composites of common mistakes (external reload
 without clearing `LOCATION` after `DROP`; data loss after managed `DROP`). They are
@@ -307,10 +307,10 @@ DDL and `DESCRIBE FORMATTED` examples for Gist embeds live under
 
 ## Sources
 
-- [Apache Hive — LanguageManual DDL][langddl]
-- [Apache Hive — Hive Transactions (ACID)][acid]
-- [Apache Hive — Design documents][designdocs]
-- [HIVE-13175 — disallow making external tables transactional][h13175]
+- [Apache Hive: LanguageManual DDL][langddl]
+- [Apache Hive: Hive Transactions (ACID)][acid]
+- [Apache Hive: Design documents][designdocs]
+- [HIVE-13175: disallow making external tables transactional][h13175]
 
 [langddl]: https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL
 [acid]: https://cwiki.apache.org/confluence/display/Hive/Hive+Transactions
