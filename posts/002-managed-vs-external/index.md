@@ -203,12 +203,19 @@ opening incidents happened.
 
 ## Hive 3 wrinkles worth knowing
 
-**Transactional (ACID) tables.** Full ACID (`INSERT`/`UPDATE`/`DELETE`/`MERGE`,
-compaction) assumes layouts Hive manages for those features. Marts that need
-row-level change are usually **managed transactional** tables in a curated schema.
-Pointing arbitrary external directories at ACID without understanding layout is how
-you end up in the "Spark says DELETE is not supported" post — slated for #8 in
-this series.
+**Transactional (ACID) tables.** In Hive 3, **external tables are not
+transactional.** Native ACID (`UPDATE`/`DELETE`/`MERGE`, compaction, consistent
+snapshots) needs Hive to own and rewrite the data files. On an external table the
+bytes live at a `LOCATION` outside that control, so making an external table ACID
+is disallowed ([HIVE-13175][h13175]). Full ACID assumes layouts Hive manages.
+Marts that need row-level change belong in **managed transactional** tables in a
+curated schema, not on a shared landing prefix.
+
+Formats like Delta or Iceberg on object storage carry **their own** transaction
+logs and lifecycle; that is a different model from Hive native ACID on
+`CREATE EXTERNAL TABLE`. Expecting `DELETE` to work because the table "looks
+curated" but is still external is how you end up in the "Spark says DELETE is not
+supported" post, slated for #8 in this series.
 
 **Renames and `ALTER TABLE SET LOCATION`.** Renaming a managed table is a catalog
 + warehouse concern. Changing `LOCATION` on external repoints metadata without
@@ -287,7 +294,9 @@ DDL and `DESCRIBE FORMATTED` examples for Gist embeds live under
 - [Apache Hive — LanguageManual DDL][langddl]
 - [Apache Hive — Hive Transactions (ACID)][acid]
 - [Apache Hive — Design documents][designdocs]
+- [HIVE-13175 — disallow making external tables transactional][h13175]
 
 [langddl]: https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL
 [acid]: https://cwiki.apache.org/confluence/display/Hive/Hive+Transactions
 [designdocs]: https://hive.apache.org/development/designdocs/
+[h13175]: https://issues.apache.org/jira/browse/HIVE-13175
