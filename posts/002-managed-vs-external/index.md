@@ -170,12 +170,18 @@ flowchart LR
 ## What this is not
 
 **Neither choice is inherently faster or more secure.** Formats, partitioning,
-file sizes, and skew dominate read cost. IAM and policy dominate security. "External
-for speed" usually means **the files were already there**, not a magic keyword.
+file sizes, and skew dominate read cost. IAM and policy dominate security.
+People sometimes pick external hoping reads will be faster. Usually they mean
+**the files are already on the lake** and Hive only registers them, so the
+pipeline skips copying into the warehouse. `EXTERNAL` by itself does not speed up
+queries.
 
-**Neither choice replaces a data contract.** External names at boundaries; the
-contract is path and layout. Managed names in the curated zone; the contract is
-the model consumers trust.
+**Managed vs external is not a substitute for agreeing with other teams.** At the
+edge (partner or upstream feeds), the external table is often just a catalog name
+over a folder someone else writes. The real agreement is the **path**, **file
+format**, and **layout** (columns and partition folders). In the curated
+warehouse, the managed table is usually the **official dataset** analysts query.
+The real agreement is the **schema**, **grain**, and **refresh** they rely on.
 
 ## Three mistakes I see in production reviews
 
