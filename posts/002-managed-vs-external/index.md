@@ -6,13 +6,18 @@ tags: [hive, dataengineering, hive3, tables]
 canonical_url:
 ---
 
-Two cleanup sprints, two opposite failures, same root cause.
+Two cutovers, two opposite failures, same root cause.
 
-In the first, someone `DROP TABLE`d what everyone called "the staging table." The
-command succeeded. Monday morning the landing files were still on object storage —
-but nothing in the metastore pointed at them. Finance kept paying for the prefix.
-Downstream jobs failed with "table not found." Nobody had run a byte copy; they
-had only deleted **metadata** for an **external** table.
+In the first, we needed a full reload of five years of history for a
+partner-facing interface. The playbook was familiar: `DROP TABLE`, recreate the
+DDL, run the backfill. The table was **external**, but the steps were written like
+a managed refresh — drop the name, load again, validate against upstream. `DROP
+TABLE` succeeded; nobody deleted the files at the declared `LOCATION`. The reload
+landed on top of the old prefix. Row counts and key checks against upstream failed,
+not because the new extract was wrong, but because queries were reading **old and
+new files together**. After someone cleared the prefix manually, we registered the
+table again and ran the five-year load **twice**. Same root mistake: on external
+tables, `DROP TABLE` is not "empty the landing."
 
 In the second, someone `DROP TABLE`d a mart that analysts still bookmarked in a
 wiki. The metastore entry vanished **and** the warehouse directory disappeared.
@@ -128,9 +133,9 @@ STORED AS PARQUET
 LOCATION 's3://data-lake/landing/orders/';
 ```
 
-`DROP TABLE landing.raw_orders` removes the metastore entry **only**. Prefix
-charges and orphaned files continue until something else deletes them — the first
-incident above.
+`DROP TABLE landing.raw_orders` removes the metastore entry **only**. Files at
+`LOCATION` stay until something else deletes or overwrites them — the failure mode
+in the first opening story.
 
 Partitioned external tables often need `MSCK REPAIR TABLE` or explicit
 `ALTER TABLE ... ADD PARTITION` when directories appear on disk before DDL catches
@@ -279,9 +284,9 @@ The **DROP / EXTERNAL / managed** behaviour is documented in Hive's
 [LanguageManual DDL][langddl]. Vendor distros add trash, export, and Ranger hooks
 — verify on your cluster before a production `DROP`.
 
-The **two opening incidents** are composites of common mistakes (orphan files
-after external `DROP`; data loss after managed `DROP`). They are not one verbatim
-ticket.
+The **two opening incidents** are composites of common mistakes (external reload
+without clearing `LOCATION` after `DROP`; data loss after managed `DROP`). They are
+not one verbatim ticket.
 
 The **zone pattern** is widely described in lake design; your org may invert a
 layer for history. The decision question still applies.
