@@ -31,9 +31,9 @@ The operational patterns and review checklist are drawn from production DDL
 reviews; the opening incidents are composites, not single tickets.*
 
 Hive makes you choose managed vs external in DDL (or you inherit a choice from
-whoever wrote the script years ago). In Hive 3 the mechanics are documented; the
-hard part is aligning them with **who owns the lifecycle**, not debating ORC vs
-Parquet.
+whoever wrote the script years ago). The decision is whether **drop and recreate
+should erase the data on disk**: with a **managed** table it usually does; with an
+**external** table it does not.
 
 ## The one business question
 
@@ -65,7 +65,6 @@ follows from that line.
 | **DDL** | `CREATE TABLE ...` | `CREATE EXTERNAL TABLE ... LOCATION '...'` |
 | **Default path** | Under metastore warehouse dir | Path you declare |
 | **`DROP TABLE`** | Metadata + table data removed (trash/PURGE per distro) | Metadata only; files stay |
-| **`TRUNCATE TABLE`** | Removes data files, keeps table | Same idea on external data dir — **dangerous** if others share the path |
 | **Typical zone** | Curated marts, modeled dims/facts | Landing, partner feeds, shared lake prefixes |
 | **Who owns bytes** | Your data team / warehouse | Often upstream or platform |
 
@@ -138,6 +137,10 @@ LOCATION 's3://data-lake/landing/orders/';
 `LOCATION` stay until something else deletes or overwrites them — the failure mode
 in the first opening story.
 
+On newer distros, `external.table.purge=true` makes `DROP TABLE` delete external
+data too. Check `DESCRIBE FORMATTED` for that property and your Hive version
+before you assume files will stay.
+
 Partitioned external tables often need `MSCK REPAIR TABLE` or explicit
 `ALTER TABLE ... ADD PARTITION` when directories appear on disk before DDL catches
 up. That toil is the price of the filesystem being authoritative.
@@ -184,7 +187,7 @@ If that does not match what the ticket says, stop.
 **2. Shared `LOCATION` prefixes**
 
 Two external tables (or one external and one sloppy `INSERT`) pointed at the same
-prefix make `TRUNCATE` or overwrite a **cross-team incident**. External is not
+prefix make overwrite or bulk delete a **cross-team incident**. External is not
 "safer"; it is **shared ownership of a path**.
 
 **3. CTAS by default in the warehouse**
@@ -199,7 +202,7 @@ Run this on every cleanup ticket, not only "big" tables:
 
 1. `DESCRIBE FORMATTED schema.table;`
 2. Read **`Table Type:`** — `MANAGED_TABLE` vs `EXTERNAL_TABLE`.
-3. Read **`Location:`** — who else might write or truncate that prefix?
+3. Read **`Location:`** — who else might write or delete under that prefix?
 4. Compare to the ticket: "remove catalog entry" vs "reclaim storage."
 5. If managed and you only meant to unregister, **`DROP` is the wrong tool** —
    use rename, archive policy, or an external pointer instead.
