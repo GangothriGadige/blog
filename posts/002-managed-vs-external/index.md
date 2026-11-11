@@ -88,7 +88,6 @@ use equivalent default prefixes on ADLS, S3, or GCS).
   only by your pipelines.
 - **Clear accountability:** decommissioning includes `DROP TABLE` and reclaiming
   space.
-- **Governance:** SLAs and access line up with *your* schema.
 
 **What operators actually run**
 
