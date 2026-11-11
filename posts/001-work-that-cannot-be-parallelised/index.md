@@ -1,9 +1,12 @@
 ---
 title: "My Hive query sat at 99% for two and a half hours"
-published: false
+published: true
+published_at: 2026-10-25
+publication: "Data Engineer Things"
 description: "Thirteen of fourteen vertices finished in under four minutes. The fourteenth was a single task, and it wrote nothing. Here is how to find work that cannot be parallelised, and why adding containers never fixes it."
 tags: [hive, dataengineering, performance, optimization]
 canonical_url: https://gangothri-gadige.medium.com/my-hive-query-sat-at-99-for-two-and-a-half-hours-41bae30c1445
+det_url:  # paste blog.dataengineerthings.org URL when handy; same story, publication home
 ---
 
 A nightly `INSERT OVERWRITE` over 510 million fact rows reached 99% after three

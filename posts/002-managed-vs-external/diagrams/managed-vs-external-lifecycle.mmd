@@ -1,0 +1,10 @@
+flowchart TD
+  Q1["If the table entry disappears from the catalog,<br/>should the files on disk disappear too?"]
+  Q1 -->|Yes| M["Prefer managed table<br/>(warehouse-owned path)"]
+  Q1 -->|No| E["Prefer external table<br/>(explicit LOCATION)"]
+
+  M --> M1["You own the curated product<br/>marts, modeled dims/facts"]
+  E --> E1["You register someone else's bytes<br/>landing, partner feed, shared lake path"]
+
+  M --> M2["DROP TABLE removes metadata and data<br/>(default managed behaviour)"]
+  E --> E2["DROP TABLE removes metadata only<br/>files remain on disk"]

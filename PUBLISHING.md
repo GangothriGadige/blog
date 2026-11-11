@@ -57,6 +57,7 @@ So PNG export is mandatory and comes first. One command does all of it:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools\render-diagrams.ps1 -Post 001-work-that-cannot-be-parallelised
+powershell -ExecutionPolicy Bypass -File tools\render-diagrams.ps1 -Post 002-managed-vs-external
 ```
 
 That script drives headless Chrome, so there is **no Node, npm or Puppeteer
@@ -260,10 +261,15 @@ Opening line draft for this post:
 > A nightly Hive job hit 99% in three and a half minutes, then sat at 99% for the
 > next two and a half hours.
 >
-> The real work — a scan of 510 million rows, five joins and a GROUP BY — took
-> 185 seconds. The other 98% was one task computing column statistics that
-> nothing in the pipeline would ever read. One `SET` removed it and the job
-> finished in 16 minutes.
+> The real work was done in those first few minutes: a scan of 510 million rows,
+> five dimension joins and a GROUP BY. The remaining 98% of the runtime was a
+> single task computing column statistics that nothing in the pipeline would
+> ever read. One `SET` removed it and the job finished in 16 minutes.
+
+Do not write "the real work took 185 seconds". 185 s is the *sum* of the other
+thirteen vertices' `DURATION` values, and durations overlap in a DAG, so it is
+not an elapsed time. The measured numbers are 206 s to first reach 99% and
+8,973 s held there.
 >
 > More containers would not have helped. Some work cannot be parallelised, and
 > that work sets the floor on your runtime.
@@ -340,6 +346,17 @@ Applies to planned post 3 (the `OVERWRITE` + `UNION ALL` lock failure) and post 
 - [ ] Live URLs recorded in `README.md`
 - [ ] PNGs committed under `assets/`
 - [ ] Status updated in the backlog canvas
+
+### Post 001 — sync log
+
+| Item | Status |
+|------|--------|
+| `published: true` + `published_at` + `publication` in `posts/001-.../index.md` | Done (2026-11-10) |
+| `canonical_url` → Medium | Done |
+| `README.md` table + backlog | Done |
+| `det_url` in front matter (publication URL on `blog.dataengineerthings.org`) | **Todo** — paste from browser when on the live DET page |
+| dev.to cross-post (`published: true`, same `canonical_url`) | Not done |
+| LinkedIn / X / Reddit (optional) | Not tracked here |
 
 ---
 

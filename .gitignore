@@ -21,3 +21,11 @@ scratch/
 
 # Names internal systems — must never be published
 scrub-terms.txt
+
+# Personal learning queue (may reference work repos)
+learning-topics.md
+cluster-platform-notes.md
+airflow-operators-notes.md
+livy-submit-samples.txt
+scripts/edge-hdp-capture.sh
+scripts/edge-bdp-capture.sh

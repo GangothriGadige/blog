@@ -1,0 +1,18 @@
+# Example fragments from DESCRIBE FORMATTED (identifiers fictional)
+
+## Managed dimension
+Table Type:     MANAGED_TABLE
+Table Parameters:
+  transaction al  false
+Location:       hdfs://cluster/warehouse/analytics.db/dim_channel
+...
+
+## External landing copy
+Table Type:     EXTERNAL_TABLE
+Location:       s3://data-lake/landing/orders/
+...
+
+# Run this before any cleanup sprint DROP:
+#   DESCRIBE FORMATTED schema.table;
+# If Table Type and Location do not match what stakeholders expect,
+# stop and re-label ownership — do not "just drop it."

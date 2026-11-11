@@ -1,0 +1,24 @@
+flowchart LR
+  subgraph upstream [Upstream systems]
+    U1[Files land on schedule]
+  end
+
+  subgraph landing [Landing zone]
+    L1[EXTERNAL tables]
+    L2[LOCATION fixed by contract]
+  end
+
+  subgraph curated [Curated warehouse]
+    C1[MANAGED tables]
+    C2[Model owned by data team]
+  end
+
+  subgraph consumers [Consumers]
+    X1[BI and notebooks]
+    X2[Downstream pipelines]
+  end
+
+  U1 --> L1
+  L1 -->|transform jobs| C1
+  C1 --> X1
+  C1 --> X2
