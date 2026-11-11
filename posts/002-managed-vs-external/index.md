@@ -17,13 +17,14 @@ landed on top of the old prefix. Row counts and key checks against upstream fail
 not because the new extract was wrong, but because queries were reading **old and
 new files together**. After someone cleared the prefix manually, we registered the
 table again and ran the five-year load **twice**. Same root mistake: on external
-tables, `DROP TABLE` is not "empty the landing."
+tables, `DROP TABLE` does not empty files on disk.
 
-In the second, someone `DROP TABLE`d a mart that analysts still bookmarked in a
-wiki. The metastore entry vanished **and** the warehouse directory disappeared.
-A batch job had been reprocessing from that path for years. Recovery meant restore
-from backup, not `CREATE TABLE` again — because it had been **managed**, and
-`DROP TABLE` meant **delete the product**.
+In the second, we dropped a **managed** mart during data cleanup, assuming an old
+copy nobody used. A downstream job still read it. `DROP TABLE` removed the
+metastore row and deleted the data under the warehouse path. We ran `CREATE TABLE`
+again with the same DDL. The errors went away, but the table was empty. We
+restored from backup. On managed tables, `DROP TABLE` deletes files on disk, not
+just the catalog entry.
 
 *Disclosure: I used an AI assistant to help draft and structure this write-up.
 The operational patterns and review checklist are drawn from production DDL
