@@ -118,7 +118,7 @@ unregister a landing alias.
 
 **External** tables are declared with `CREATE EXTERNAL TABLE ... LOCATION '...'`.
 The metastore holds schema and partition columns; **bytes live at the location**,
-often written first by ingestion or another engine.
+often written first by ingestion.
 
 **Business fit**
 
@@ -147,9 +147,10 @@ On newer distros, `external.table.purge=true` makes `DROP TABLE` delete external
 data too. Check `DESCRIBE FORMATTED` for that property and your Hive version
 before you assume files will stay.
 
-Partitioned external tables often need `MSCK REPAIR TABLE` or explicit
-`ALTER TABLE ... ADD PARTITION` when directories appear on disk before DDL catches
-up. That toil is the price of the filesystem being authoritative.
+External tables need `MSCK REPAIR TABLE` or explicit partition adds when new
+directories land before the catalog is updated. Because the real data lives on
+disk and not only in Hive, you maintain partitions yourself; that maintenance is
+the cost of choosing external.
 
 ```mermaid
 flowchart LR
