@@ -296,22 +296,6 @@ shared ADLS prefixes, `DROP TABLE` vs `DELETE` on Delta. The vocabulary changes;
 **who may delete the directory when the table name goes away** does not. If you
 only remember one sentence for a multi-engine lake, remember that one.
 
-## What is measured here, and what is not
-
-The **DROP / EXTERNAL / managed** behaviour is documented in Hive's
-[LanguageManual DDL][langddl]. Vendor distros add trash, export, and Ranger hooks.
-Verify on your cluster before a production `DROP`.
-
-The **two opening incidents** are composites of common mistakes (external reload
-without clearing `LOCATION` after `DROP`; data loss after managed `DROP`). They are
-not one verbatim ticket.
-
-The **zone pattern** is widely described in lake design; your org may invert a
-layer for history. The decision question still applies.
-
-DDL and `DESCRIBE FORMATTED` examples for Gist embeds live under
-`posts/002-managed-vs-external/gists/` in the blog repo.
-
 ## Sources
 
 - [Apache Hive: LanguageManual DDL][langddl]
