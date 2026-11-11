@@ -35,16 +35,23 @@ whoever wrote the script years ago). The decision is whether **drop and recreate
 should erase the data on disk**: with a **managed** table it usually does; with an
 **external** table it does not.
 
-## The one business question
+## The design question (standards and exceptions)
 
-Ask stakeholders this before anyone writes DDL:
+Platform standards should answer this for most tables: paths where upstream drops
+files **external**, tables your team owns in the warehouse **managed**. When the
+work does not fit that pattern (new interface, shared storage prefix, data
+cleanup, or full reload), answer this before anyone runs the DDL:
 
 > If we remove the table from the catalog, should the underlying files disappear?
 
 | Answer | Table type | What you are saying |
 |--------|------------|---------------------|
-| **Yes** | **Managed** | This dataset is **our product**. Retiring it includes reclaiming storage. |
-| **No** | **External** | The files are a **shared asset** or **system of record elsewhere**. The table is a named pointer. |
+| **Yes** | **Managed** | We own the bytes. Dropping the name may delete data under the warehouse path. |
+| **No** | **External** | Something else owns the bytes. The Hive name is a pointer at a fixed `LOCATION`. |
+
+At boundaries (upstream feeds, retention, shared lake prefixes), confirm file
+ownership with the team that writes or pays for that storage, not for every
+internal mart.
 
 ```mermaid
 flowchart TD
@@ -55,8 +62,8 @@ flowchart TD
   E --> E2["DROP removes metadata only"]
 ```
 
-Everything else — ACID, compaction, `MSCK REPAIR`, whether Spark can `DELETE` —
-follows from that line.
+ACID, compaction, `MSCK REPAIR`, and cross-engine `DELETE` behaviour all tie
+back to the same ownership split; the sections below spell those out.
 
 ## At a glance
 
