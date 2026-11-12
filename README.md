@@ -35,7 +35,7 @@ No Node or npm required — it drives an installed Chrome or Edge.
 | # | Title | Status | DET | Medium | dev.to |
 |---|---|---|---|---|---|
 | 001 | [My Hive query sat at 99% for two and a half hours](./posts/001-work-that-cannot-be-parallelised/index.md) | **Published** (accepted DET, ~2026-10-25) | add `det_url` in front matter | [link](https://gangothri-gadige.medium.com/my-hive-query-sat-at-99-for-two-and-a-half-hours-41bae30c1445) | — |
-| 002 | [Managed vs external tables in Hive 3: who owns the files?](./posts/002-managed-vs-external/index.md) | Draft | — | — |
+| 002 | [Managed vs external tables in Hive 3: who owns the files?](./posts/002-managed-vs-external/index.md) | **Published** (DET, 2026-11-12) | [DET](https://medium.com/data-engineer-things/managed-vs-external-tables-in-hive-3-who-owns-the-files-32835eafa9aa) | [link](https://medium.com/data-engineer-things/managed-vs-external-tables-in-hive-3-who-owns-the-files-32835eafa9aa) | — |
 
 ## Backlog
 
@@ -47,7 +47,7 @@ behind it, and should be framed as such.
 **Measured**
 
 1. The work that can't be parallelised — *published in [Data Engineer Things](https://blog.dataengineerthings.org)*
-2. Managed vs external tables in Hive 3 — *draft in* `posts/002-managed-vs-external/`
+2. Managed vs external tables in Hive 3 — *published in* [Data Engineer Things](https://medium.com/data-engineer-things/managed-vs-external-tables-in-hive-3-who-owns-the-files-32835eafa9aa)
 3. Why `INSERT OVERWRITE` with `UNION ALL` fails on a transactional table
 4. Heap, containers, and the three ways Hive runs out of memory
 5. How to tell what a slow query is actually waiting on

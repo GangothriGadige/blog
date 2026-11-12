@@ -1,9 +1,12 @@
 ---
 title: "Managed vs external tables in Hive 3: who owns the files?"
-published: false
+published: true
+published_at: 2026-11-12
+publication: "Data Engineer Things"
 description: "DROP TABLE is not a syntax detail in Hive 3. It either deletes your product or leaves orphan files on the lake, depending on one word you wrote years ago in DDL."
 tags: [hive, dataengineering, hive3, tables]
-canonical_url:
+canonical_url: https://medium.com/data-engineer-things/managed-vs-external-tables-in-hive-3-who-owns-the-files-32835eafa9aa
+det_url: https://medium.com/data-engineer-things/managed-vs-external-tables-in-hive-3-who-owns-the-files-32835eafa9aa
 ---
 
 Two cutovers, two opposite failures, same root cause.
